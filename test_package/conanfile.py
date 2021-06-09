@@ -5,6 +5,7 @@ from conans import ConanFile, CMake, tools
 
 class LibfreenectTestConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
+    requires = "libfreenect/v0.6.2"
     generators = "cmake"
 
     def build(self):

@@ -3,7 +3,7 @@ from conans import ConanFile, CMake, tools
 
 class LibfreenectConan(ConanFile):
     name = "libfreenect"
-    version = "0.6.2"
+    version = "v0.6.2"
     license = "MIT"
     author = "Matthew J. Lenzo"
     url = "https://github.com/lenzomj/conan-libfreenect"
@@ -14,22 +14,18 @@ class LibfreenectConan(ConanFile):
     default_options = {"shared": False, "fPIC": True}
     generators = "cmake"
 
-    build_dir = "build"
+    source_dir = "libfreenect"
     install_dir = "install"
 
-    #def config_options(self):
-    #    if self.settings.os == "Windows":
-    #        del self.options.fPIC
-
     def source(self):
-        self.run("git clone https://github.com/OpenKinect/libfreenect.git --branch %s" % self.version)
-        tools.replace_in_file("CMakeLists.txt",
+        self.run("git clone --branch %s https://github.com/OpenKinect/libfreenect.git" % self.version)
+        tools.replace_in_file("%s/CMakeLists.txt" % self.source_dir,
                               "PROJECT(libfreenect)",
-                              '''
-                              PROJECT(libfreenect)
-                              include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-                              conan_basic_setup()
-                              ''')
+        '''
+        PROJECT(libfreenect)
+        include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+        conan_basic_setup()
+        ''')
 
     def build(self):
         cmake = CMake(self)
@@ -48,15 +44,13 @@ class LibfreenectConan(ConanFile):
         cmake.definitions['BUILD_PYTHON3'] = False
         cmake.definitions['BUILD_REDIST_PACKAGE'] = True
 
-        tools.mkdir(self.build_dir)
-        with tools.chdir(self.build_dir):
-            cmake.configure(source_dir='..', build_dir='.')
-            cmake.build()
+        cmake.configure(source_dir='%s' % self.source_dir, build_dir='.')
+        cmake.build()
 
     def package(self):
-        self.copy('*.h', src='%s/include' % self.install_dir, dst='include')
-        self.copy('libfreenect.so', src='%s/lib' % self.install_dir, dst='lib')
+        self.copy('*.h', src='%s/include' % self.source_dir, dst='include/%s' % self.source_dir)
+        self.copy('*.so', src='lib', dst='lib')
 
     def package_info(self):
-        self.cpp_info.libs = ["libfreenect"]
+        self.cpp_info.libs = ["freenect"]
 
